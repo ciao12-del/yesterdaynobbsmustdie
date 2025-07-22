@@ -16,13 +16,15 @@ local Humanoid = Character:WaitForChild("Humanoid")
 -- Control Variables
 local AutoKillEnabled = false
 local GodModeEnabled = false
+local FlyEnabled = false
+local NoclipEnabled = false
 
 -- Auto-Damage Loop
 RunS.RenderStepped:Connect(function()
     if AutoKillEnabled then
         for _, e in pairs(Enemies:GetChildren()) do
             if e:IsA("Model") and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
-                HurtEnemy:FireServer(e, 999999999999999999) -- Massive damage
+                HurtEnemy:FireServer(e, 999999999999999999)
             end
         end
     end
@@ -36,11 +38,52 @@ RunS.Heartbeat:Connect(function()
     end
 end)
 
+-- Fly System
+local flyBodyGyro, flyBodyVelocity
+local function StartFly()
+    local character = LocalPlayer.Character
+    local root = character:WaitForChild("HumanoidRootPart")
+
+    flyBodyGyro = Instance.new("BodyGyro")
+    flyBodyGyro.P = 9e4
+    flyBodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+    flyBodyGyro.CFrame = root.CFrame
+    flyBodyGyro.Parent = root
+
+    flyBodyVelocity = Instance.new("BodyVelocity")
+    flyBodyVelocity.velocity = Vector3.new(0, 0, 0)
+    flyBodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+    flyBodyVelocity.Parent = root
+
+    RunS.RenderStepped:Connect(function()
+        if FlyEnabled then
+            flyBodyGyro.CFrame = workspace.CurrentCamera.CFrame
+            flyBodyVelocity.Velocity = workspace.CurrentCamera.CFrame.LookVector * 100
+        end
+    end)
+end
+
+local function StopFly()
+    if flyBodyGyro then flyBodyGyro:Destroy() end
+    if flyBodyVelocity then flyBodyVelocity:Destroy() end
+end
+
+-- Noclip System
+RunS.Stepped:Connect(function()
+    if NoclipEnabled then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
 -- GUI Setup
 local Window = Rayfield:CreateWindow({
     Name = "NEDH'xsx Hub",
     LoadingTitle = "NEDH'xsx Hub",
-    LoadingSubtitle = "Destroy the world",
+    LoadingSubtitle = "by You",
     ConfigurationSaving = {
         Enabled = false
     },
@@ -48,33 +91,57 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "Key Required",
         Subtitle = "Enter the access key to proceed",
-        Note = "Enter our discord",
-        FileName = "NoobsMustDieKeyData",
+        Note = "Key: Freemium-1029384756",
+        FileName = "NEDHxsxKeyData",
         SaveKey = true,
         GrabKeyFromSite = false,
         Key = "Freemium-1029384756"
     }
 })
 
--- "Destroy" Tab
+-- Tab: Destroy
 local DestroyTab = Window:CreateTab("Destroy", 4483362458)
 
--- Toggle: Auto Kill
 DestroyTab:CreateToggle({
     Name = "Enable Auto Kill",
-    CurrentValue = false, -- default OFF
+    CurrentValue = false,
     Flag = "AutoKillToggle",
     Callback = function(Value)
         AutoKillEnabled = Value
     end,
 })
 
--- Toggle: God Mode
 DestroyTab:CreateToggle({
     Name = "Enable God Mode",
-    CurrentValue = false, -- default OFF
+    CurrentValue = false,
     Flag = "GodModeToggle",
     Callback = function(Value)
         GodModeEnabled = Value
+    end,
+})
+
+-- Tab: Control
+local ControlTab = Window:CreateTab("Control", 4483362458)
+
+ControlTab:CreateToggle({
+    Name = "Enable Fly",
+    CurrentValue = false,
+    Flag = "FlyToggle",
+    Callback = function(Value)
+        FlyEnabled = Value
+        if FlyEnabled then
+            StartFly()
+        else
+            StopFly()
+        end
+    end,
+})
+
+ControlTab:CreateToggle({
+    Name = "Enable Noclip",
+    CurrentValue = false,
+    Flag = "NoclipToggle",
+    Callback = function(Value)
+        NoclipEnabled = Value
     end,
 })
