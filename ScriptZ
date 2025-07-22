@@ -38,9 +38,9 @@ end)
 
 -- GUI Setup
 local Window = Rayfield:CreateWindow({
-    Name = "Noobs Must Die",
-    LoadingTitle = "Noobs Must Die",
-    LoadingSubtitle = "by You",
+    Name = "NEDH'xsx Hub",
+    LoadingTitle = "NEDH'xsx Hub",
+    LoadingSubtitle = "Destroy the world",
     ConfigurationSaving = {
         Enabled = false
     },
@@ -48,7 +48,7 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "Key Required",
         Subtitle = "Enter the access key to proceed",
-        Note = "Key: Freemium-1029384756",
+        Note = "Enter our discord",
         FileName = "NoobsMustDieKeyData",
         SaveKey = true,
         GrabKeyFromSite = false,
