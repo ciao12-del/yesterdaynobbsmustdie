@@ -4,20 +4,35 @@ local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 -- Services
 local RS = game:GetService("ReplicatedStorage")
 local RunS = game:GetService("RunService")
+local Players = game:GetService("Players")
+
 local Enemies = workspace:WaitForChild("Enemies")
 local HurtEnemy = RS:WaitForChild("HurtEnemy")
 
--- Control Variable
-local Enabled = true
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
--- Original Auto-Damage Logic
+-- Control Variables
+local AutoKillEnabled = false
+local GodModeEnabled = false
+
+-- Auto-Damage Loop
 RunS.RenderStepped:Connect(function()
-    if Enabled then
+    if AutoKillEnabled then
         for _, e in pairs(Enemies:GetChildren()) do
             if e:IsA("Model") and e:FindFirstChild("Humanoid") and e:FindFirstChild("HumanoidRootPart") then
-                HurtEnemy:FireServer(e, 999999999999999999) -- Damage
+                HurtEnemy:FireServer(e, 999999999999999999) -- Massive damage
             end
         end
+    end
+end)
+
+-- God Mode Loop
+RunS.Heartbeat:Connect(function()
+    if GodModeEnabled and Humanoid and Humanoid.Health < 1e6 then
+        Humanoid.MaxHealth = 1e6
+        Humanoid.Health = 1e6
     end
 end)
 
@@ -41,15 +56,25 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- Create "Destroy" Tab
+-- "Destroy" Tab
 local DestroyTab = Window:CreateTab("Destroy", 4483362458)
 
--- Toggle for Auto Kill
+-- Toggle: Auto Kill
 DestroyTab:CreateToggle({
     Name = "Enable Auto Kill",
-    CurrentValue = true,
+    CurrentValue = false, -- default OFF
     Flag = "AutoKillToggle",
     Callback = function(Value)
-        Enabled = Value
+        AutoKillEnabled = Value
+    end,
+})
+
+-- Toggle: God Mode
+DestroyTab:CreateToggle({
+    Name = "Enable God Mode",
+    CurrentValue = false, -- default OFF
+    Flag = "GodModeToggle",
+    Callback = function(Value)
+        GodModeEnabled = Value
     end,
 })
